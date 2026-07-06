@@ -23,19 +23,13 @@ export const Store: React.FC = () => {
       {/* Title */}
       <div className="flex-col">
         <h2 className="title-medium text-gradient-secondary flex-row align-center gap-xs">
-          <Leaf size={20} style={{ color: 'hsl(var(--secondary))' }} />
+          <Leaf size={20} style={{ color: 'var(--color-success)' }} />
           Tienda Circular Sostenible
         </h2>
         <p className="text-xs text-muted">Prendas ecológicas y marcas aliadas en Lima Metropolitana</p>
       </div>
 
-      {/* Sustainable intro banner */}
-      <div className="glass-card flex-col gap-sm" style={{ borderLeft: '4px solid hsl(var(--secondary))', background: 'rgba(16, 185, 129, 0.04)' }}>
-        <h4 className="text-xs font-bold text-gradient-secondary">Monetización Circular & Afiliados</h4>
-        <p className="text-xs text-muted">
-          Recomendamos prendas ecológicas de marcas locales para complementar tu armario actual. StyleFlow recibe una comisión por compra del <strong>5% al 10%</strong>.
-        </p>
-      </div>
+
 
       {/* Store list */}
       <div className="flex-col gap-md">
@@ -98,7 +92,7 @@ export const Store: React.FC = () => {
           style={{
             position: 'fixed',
             top: 0, left: 0, right: 0, bottom: 0,
-            background: 'rgba(0,0,0,0.85)',
+            background: 'var(--color-overlay)',
             zIndex: 9999,
             display: 'flex',
             alignItems: 'center',
@@ -107,7 +101,7 @@ export const Store: React.FC = () => {
           }}
         >
           <div className="glass-card text-center flex-col align-center gap-md" style={{ maxWidth: '360px' }}>
-            <div className="logo-glow animate-spin" style={{ background: 'hsl(var(--secondary))', width: '56px', height: '56px', borderRadius: '50%' }}>
+            <div className="logo-glow animate-spin" style={{ background: 'var(--color-success)', width: '56px', height: '56px', borderRadius: '50%' }}>
               <ShoppingBag size={24} style={{ color: '#fff' }} />
             </div>
 
@@ -116,8 +110,8 @@ export const Store: React.FC = () => {
               <p className="text-xs text-muted">Conectando de forma segura con <strong>{redirectingItem.brand}</strong>...</p>
             </div>
 
-            <div className="glass-card flex-row align-center gap-xs" style={{ background: 'rgba(16, 185, 129, 0.05)', borderColor: 'rgba(16, 185, 129, 0.2)', padding: '10px' }}>
-              <CheckCircle size={14} style={{ color: 'hsl(var(--secondary))' }} />
+            <div className="glass-card flex-row align-center gap-xs" style={{ background: 'var(--color-success-bg)', borderColor: 'var(--badge-eco-border)', padding: '10px' }}>
+              <CheckCircle size={14} style={{ color: 'var(--color-success)' }} />
               <span className="text-xs text-muted">
                 StyleFlow AI registrará una comisión estimada de <strong>S/. {(redirectingItem.price * 0.08).toFixed(2)}</strong>.
               </span>

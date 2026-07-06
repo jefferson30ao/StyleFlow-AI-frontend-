@@ -8,7 +8,7 @@ export const MirrorMode: React.FC = () => {
   const { user, closet, setActiveTab } = useApp();
   
   // Mirror Mode is only available in 'elite' plan
-  const isLocked = user.plan !== 'elite';
+  const isLocked = !user || user.plan !== 'elite';
 
   const tops = closet.filter(c => c.category === 'tops');
   const bottoms = closet.filter(c => c.category === 'bottoms');
@@ -45,12 +45,12 @@ export const MirrorMode: React.FC = () => {
             width: '72px',
             height: '72px',
             borderRadius: '50%',
-            background: 'linear-gradient(135deg, #f59e0b, #ec4899)',
+            background: 'var(--logo-gradient)',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
             color: '#fff',
-            boxShadow: '0 8px 32px rgba(245, 158, 11, 0.4)'
+            boxShadow: 'var(--shadow-overlay)'
           }}
         >
           <Crown size={36} />
@@ -69,20 +69,20 @@ export const MirrorMode: React.FC = () => {
           
           <div className="flex-col gap-sm">
             <div className="flex-row gap-sm align-center">
-              <div style={{ color: '#f59e0b' }}><Zap size={14} /></div>
-              <span className="text-xs text-muted"><strong style={{ color: '#fff' }}>Probador 3D Fotorrealista:</strong> Observa cómo se adapta la prenda a tu tipo de cuerpo en menos de 5 segundos.</span>
+              <div style={{ color: 'var(--color-elite)' }}><Zap size={14} /></div>
+              <span className="text-xs text-muted"><strong style={{ color: 'var(--color-text-primary)' }}>Probador 3D Fotorrealista:</strong> Observa cómo se adapta la prenda a tu tipo de cuerpo en menos de 5 segundos.</span>
             </div>
             <div className="flex-row gap-sm align-center">
-              <div style={{ color: '#f59e0b' }}><Zap size={14} /></div>
-              <span className="text-xs text-muted"><strong style={{ color: '#fff' }}>Modelado Nano Banana 2:</strong> Algoritmo de caída de tela tridimensional y simulación física de pliegues.</span>
+              <div style={{ color: 'var(--color-elite)' }}><Zap size={14} /></div>
+              <span className="text-xs text-muted"><strong style={{ color: 'var(--color-text-primary)' }}>Modelado Nano Banana 2:</strong> Algoritmo de caída de tela tridimensional y simulación física de pliegues.</span>
             </div>
             <div className="flex-row gap-sm align-center">
-              <div style={{ color: '#f59e0b' }}><Zap size={14} /></div>
-              <span className="text-xs text-muted"><strong style={{ color: '#fff' }}>Personal Shopper AI:</strong> Sugerencias inteligentes de accesorios complementarios según el tono y morfología.</span>
+              <div style={{ color: 'var(--color-elite)' }}><Zap size={14} /></div>
+              <span className="text-xs text-muted"><strong style={{ color: 'var(--color-text-primary)' }}>Personal Shopper AI:</strong> Sugerencias inteligentes de accesorios complementarios según el tono y morfología.</span>
             </div>
           </div>
 
-          <div style={{ borderTop: '1px solid hsla(var(--border-color), 0.8)', paddingTop: '16px' }} className="flex-col gap-sm">
+          <div style={{ borderTop: '1px solid var(--color-border)', paddingTop: '16px' }} className="flex-col gap-sm">
             <div className="flex-row justify-between align-center">
               <span className="text-sm font-bold text-muted">Suscripción Elite</span>
               <span className="text-lg font-bold text-gradient-primary">$19.99/mes</span>
@@ -101,12 +101,12 @@ export const MirrorMode: React.FC = () => {
       <div className="flex-row align-center justify-between">
         <div className="flex-col">
           <h2 className="title-medium text-gradient-primary flex-row align-center gap-xs">
-            <Crown size={20} style={{ color: '#f59e0b' }} />
+            <Crown size={20} style={{ color: 'var(--color-elite)' }} />
             Probador Virtual
           </h2>
           <p className="text-xs text-muted">Motor físico Nano Banana 2 AI</p>
         </div>
-        <span className="eco-badge animate-bounce" style={{ background: 'hsla(35, 92%, 50%, 0.15)', color: '#f59e0b', borderColor: 'rgba(245,158,11,0.3)' }}>
+        <span className="eco-badge animate-bounce" style={{ background: 'var(--color-elite-bg)', color: 'var(--color-elite)', borderColor: 'var(--color-elite)' }}>
           Elite Activo 🍌
         </span>
       </div>
@@ -116,8 +116,8 @@ export const MirrorMode: React.FC = () => {
         className="glass-card flex-row justify-between relative overflow-hidden"
         style={{ 
           minHeight: '280px',
-          background: 'radial-gradient(circle at center, rgba(30, 27, 75, 0.4) 0%, rgba(23, 27, 38, 0.8) 100%)',
-          border: '1px solid hsla(var(--primary), 0.3)'
+          background: 'var(--color-bg-muted)',
+          border: '1px solid var(--color-border)'
         }}
       >
         {/* Left Side: Garments chosen overlay */}
@@ -128,7 +128,7 @@ export const MirrorMode: React.FC = () => {
               {selectedTop ? (
                 <GarmentIcon category="tops" color={selectedTop.color} size={16} />
               ) : (
-                <div style={{ width: '100%', height: '100%', border: '1px dashed hsla(var(--border-color), 1)', borderRadius: '8px' }} />
+                <div style={{ width: '100%', height: '100%', border: '1px dashed var(--color-border)', borderRadius: 'var(--radius-sm)' }} />
               )}
             </div>
           </div>
@@ -138,7 +138,7 @@ export const MirrorMode: React.FC = () => {
               {selectedBottom ? (
                 <GarmentIcon category="bottoms" color={selectedBottom.color} size={16} />
               ) : (
-                <div style={{ width: '100%', height: '100%', border: '1px dashed hsla(var(--border-color), 1)', borderRadius: '8px' }} />
+                <div style={{ width: '100%', height: '100%', border: '1px dashed var(--color-border)', borderRadius: 'var(--radius-sm)' }} />
               )}
             </div>
           </div>
@@ -153,11 +153,12 @@ export const MirrorMode: React.FC = () => {
                   width: '80px',
                   height: '80px',
                   borderRadius: '50%',
-                  background: 'rgba(255,255,255,0.05)',
+                  background: 'var(--color-bg-surface)',
+                  border: '1px solid var(--color-border)',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  color: 'hsl(var(--text-muted))'
+                  color: 'var(--color-text-tertiary)'
                 }}
               >
                 <User size={36} />
@@ -171,7 +172,7 @@ export const MirrorMode: React.FC = () => {
 
           {renderStep === 'rendering' && (
             <div className="flex-col align-center gap-sm">
-              <RefreshCw className="animate-spin" size={32} style={{ color: 'hsl(var(--primary))' }} />
+              <RefreshCw className="animate-spin" size={32} style={{ color: 'var(--color-action-primary-bg)' }} />
               <span className="text-xs font-bold text-gradient-primary">Nano Banana 2: Analizando pliegues...</span>
               <div className="scanning-bar" />
             </div>
@@ -185,11 +186,11 @@ export const MirrorMode: React.FC = () => {
                   width: '120px',
                   height: '190px',
                   background: `linear-gradient(180deg, ${selectedTop?.color || '#333'} 40%, ${selectedBottom?.color || '#666'} 40%)`,
-                  borderRadius: '24px',
+                  borderRadius: 'var(--radius-lg)',
                   position: 'relative',
                   overflow: 'hidden',
-                  border: '3px solid rgba(255, 255, 255, 0.1)',
-                  boxShadow: 'var(--shadow-lg), 0 0 20px rgba(139, 92, 246, 0.4)'
+                  border: '2px solid var(--color-border)',
+                  boxShadow: 'var(--shadow-overlay)'
                 }}
                 className="pulse-glow-effect"
               >
@@ -220,7 +221,7 @@ export const MirrorMode: React.FC = () => {
                     alignItems: 'center',
                     justifyContent: 'center',
                     fontSize: '0.5rem',
-                    color: '#a78bfa',
+                    color: 'var(--color-action-primary-text)',
                     fontWeight: 700
                   }}
                 >
@@ -253,7 +254,7 @@ export const MirrorMode: React.FC = () => {
               min="0" max="100" 
               value={fit} 
               onChange={(e) => setFit(Number(e.target.value))}
-              style={{ width: '50px', accentColor: 'hsl(var(--primary))' }}
+              style={{ width: '50px', accentColor: 'var(--color-action-primary-bg)' }}
             />
           </div>
 
@@ -264,7 +265,7 @@ export const MirrorMode: React.FC = () => {
               min="0" max="100" 
               value={lighting} 
               onChange={(e) => setLighting(Number(e.target.value))}
-              style={{ width: '50px', accentColor: 'hsl(var(--primary))' }}
+              style={{ width: '50px', accentColor: 'var(--color-action-primary-bg)' }}
             />
           </div>
         </div>
@@ -298,7 +299,7 @@ export const MirrorMode: React.FC = () => {
               className="input-glass"
               value={selectedTop?.id || ''}
               onChange={(e) => setSelectedTop(tops.find(t => t.id === e.target.value) || null)}
-              style={{ background: 'hsl(var(--bg-card))', fontSize: '0.75rem', padding: '10px' }}
+              style={{ background: 'var(--color-bg-muted)', fontSize: '0.75rem', padding: '10px' }}
             >
               {tops.map(t => (
                 <option key={t.id} value={t.id}>{t.name}</option>
@@ -313,7 +314,7 @@ export const MirrorMode: React.FC = () => {
               className="input-glass"
               value={selectedBottom?.id || ''}
               onChange={(e) => setSelectedBottom(bottoms.find(b => b.id === e.target.value) || null)}
-              style={{ background: 'hsl(var(--bg-card))', fontSize: '0.75rem', padding: '10px' }}
+              style={{ background: 'var(--color-bg-muted)', fontSize: '0.75rem', padding: '10px' }}
             >
               {bottoms.map(b => (
                 <option key={b.id} value={b.id}>{b.name}</option>

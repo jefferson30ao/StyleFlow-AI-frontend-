@@ -24,7 +24,7 @@ export const Plans: React.FC = () => {
         'Soporte comunitario básico',
         'Presencia de anuncios no intrusivos'
       ],
-      crownColor: 'hsl(var(--text-muted))'
+      crownColor: 'var(--color-text-tertiary)'
     },
     {
       id: 'pro' as PlanType,
@@ -37,7 +37,7 @@ export const Plans: React.FC = () => {
         'Eliminación completa de publicidad',
         'Soporte prioritario 24/7'
       ],
-      crownColor: 'hsl(var(--primary))'
+      crownColor: 'var(--color-action-primary-bg)'
     },
     {
       id: 'elite' as PlanType,
@@ -50,7 +50,7 @@ export const Plans: React.FC = () => {
         'Personal Shopper IA integrado',
         'Análisis predictivo de estilo y tendencias'
       ],
-      crownColor: '#f59e0b'
+      crownColor: 'var(--color-elite)'
     }
   ];
 
@@ -87,7 +87,7 @@ export const Plans: React.FC = () => {
       {/* Plan Card Stack */}
       <div className="flex-col gap-md">
         {plansData.map(plan => {
-          const isCurrent = user.plan === plan.id;
+          const isCurrent = user?.plan === plan.id;
           
           return (
             <div 
@@ -95,8 +95,8 @@ export const Plans: React.FC = () => {
               className="glass-card flex-col gap-md relative"
               style={{ 
                 border: isCurrent 
-                  ? `2px solid ${plan.id === 'elite' ? '#f59e0b' : 'hsl(var(--primary))'}`
-                  : '1px solid hsla(var(--border-color), 0.6)'
+                  ? `2px solid ${plan.id === 'elite' ? 'var(--color-elite)' : 'var(--color-action-primary-bg)'}`
+                  : '1px solid var(--color-border)'
               }}
             >
               {isCurrent && (
@@ -106,9 +106,9 @@ export const Plans: React.FC = () => {
                     position: 'absolute',
                     top: '-12px',
                     right: '16px',
-                    background: plan.id === 'elite' ? 'rgba(245, 158, 11, 0.15)' : 'hsla(var(--primary), 0.15)',
-                    color: plan.id === 'elite' ? '#f59e0b' : 'hsl(var(--primary))',
-                    borderColor: plan.id === 'elite' ? 'rgba(245,158,11,0.3)' : 'hsla(var(--primary), 0.3)'
+                    background: plan.id === 'elite' ? 'var(--color-elite-bg)' : 'var(--badge-ai-bg)',
+                    color: plan.id === 'elite' ? 'var(--color-elite)' : 'var(--color-action-primary-bg)',
+                    borderColor: plan.id === 'elite' ? 'var(--color-elite)' : 'var(--color-border)'
                   }}
                 >
                   Plan Activo
@@ -132,10 +132,10 @@ export const Plans: React.FC = () => {
               </div>
 
               {/* Feature lists */}
-              <div className="flex-col gap-xs" style={{ borderTop: '1px solid hsla(var(--border-color), 0.5)', paddingTop: '12px' }}>
+              <div className="flex-col gap-xs" style={{ borderTop: '1px solid var(--color-border)', paddingTop: '12px' }}>
                 {plan.features.map((feat, i) => (
                   <div key={i} className="flex-row gap-xs align-center">
-                    <Check size={12} style={{ color: plan.id === 'free' ? 'hsl(var(--text-muted))' : 'hsl(var(--secondary))', flexShrink: 0 }} />
+                    <Check size={12} style={{ color: plan.id === 'free' ? 'var(--color-text-tertiary)' : 'var(--color-success)', flexShrink: 0 }} />
                     <span className="text-xs text-muted" style={{ fontSize: '0.75rem' }}>{feat}</span>
                   </div>
                 ))}
@@ -147,8 +147,8 @@ export const Plans: React.FC = () => {
                   className="btn btn-primary mt-xs"
                   onClick={() => handleOpenCheckout(plan.id)}
                   style={{
-                    background: plan.id === 'elite' ? 'linear-gradient(135deg, #f59e0b, #d97706)' : '',
-                    boxShadow: plan.id === 'elite' ? '0 4px 15px rgba(245, 158, 11, 0.3)' : ''
+                    background: plan.id === 'elite' ? 'linear-gradient(135deg, var(--color-elite), var(--color-accent-champagne))' : '',
+                    borderColor: plan.id === 'elite' ? 'var(--color-elite)' : ''
                   }}
                 >
                   Seleccionar {plan.name}
@@ -169,7 +169,7 @@ export const Plans: React.FC = () => {
           style={{
             position: 'fixed',
             top: 0, left: 0, right: 0, bottom: 0,
-            background: 'rgba(0,0,0,0.85)',
+            background: 'var(--color-overlay)',
             zIndex: 9999,
             display: 'flex',
             alignItems: 'center',
@@ -179,7 +179,7 @@ export const Plans: React.FC = () => {
         >
           <div className="glass-card w-full" style={{ maxWidth: '400px', position: 'relative' }}>
             <button 
-              style={{ position: 'absolute', top: '16px', right: '16px', background: 'none', border: 'none', color: 'hsl(var(--text-muted))', cursor: 'pointer' }}
+              style={{ position: 'absolute', top: '16px', right: '16px', background: 'none', border: 'none', color: 'var(--color-text-tertiary)', cursor: 'pointer' }}
               onClick={() => setCheckoutModalOpen(false)}
             >
               <X size={20} />
@@ -187,12 +187,12 @@ export const Plans: React.FC = () => {
 
             {paymentSuccess ? (
               <div className="text-center flex-col align-center gap-md py-md">
-                <div className="logo-glow" style={{ background: 'hsl(var(--secondary))', width: '56px', height: '56px', borderRadius: '50%' }}>
+                <div className="logo-glow" style={{ background: 'var(--color-success)', width: '56px', height: '56px', borderRadius: '50%' }}>
                   <ShieldCheck size={28} style={{ color: '#fff' }} />
                 </div>
                 <div>
                   <h3 className="title-medium text-gradient-secondary">¡Pago Exitoso!</h3>
-                  <p className="text-xs text-muted mt-xs">Tu plan se ha actualizado a <strong style={{ color: '#fff' }}>{selectedPlan.toUpperCase()}</strong>.</p>
+                  <p className="text-xs text-muted mt-xs">Tu plan se ha actualizado a <strong style={{ color: 'var(--color-text-primary)' }}>{selectedPlan.toUpperCase()}</strong>.</p>
                 </div>
                 <span className="text-xs text-muted">Inicializando tus nuevas ventajas exclusivas...</span>
               </div>
@@ -209,31 +209,31 @@ export const Plans: React.FC = () => {
                   className="glass-card flex-col justify-between" 
                   style={{ 
                     height: '160px', 
-                    background: 'linear-gradient(135deg, hsl(var(--primary)) 0%, hsl(var(--accent)) 100%)',
-                    borderRadius: '16px',
+                    background: 'var(--logo-gradient)',
+                    borderRadius: 'var(--radius-lg)',
                     padding: '20px',
-                    boxShadow: '0 8px 24px rgba(139, 92, 246, 0.4)',
+                    boxShadow: 'var(--shadow-overlay)',
                     color: '#fff',
                     border: 'none'
                   }}
                 >
                   <div className="flex-row justify-between align-center">
-                    <span className="text-xs font-bold uppercase tracking-widest">StyleFlow Gold Card</span>
-                    <Crown size={20} style={{ color: selectedPlan === 'elite' ? '#f59e0b' : '#fff' }} />
+                    <span className="text-xs font-bold uppercase tracking-widest" style={{ color: '#fff' }}>StyleFlow Gold Card</span>
+                    <Crown size={20} style={{ color: selectedPlan === 'elite' ? 'var(--color-elite)' : '#fff' }} />
                   </div>
 
-                  <span className="text-md font-bold tracking-widest" style={{ letterSpacing: '2px', fontFamily: 'monospace' }}>
+                  <span className="text-md font-bold tracking-widest" style={{ letterSpacing: '2px', fontFamily: 'monospace', color: '#fff' }}>
                     {cardNumber}
                   </span>
 
                   <div className="flex-row justify-between align-center">
                     <div className="flex-col">
-                      <span className="text-muted" style={{ fontSize: '0.5rem', color: '#ddd' }}>TITULAR</span>
-                      <span className="text-xs font-bold uppercase">{cardName}</span>
+                      <span style={{ fontSize: '0.5rem', color: '#ddd' }}>TITULAR</span>
+                      <span className="text-xs font-bold uppercase" style={{ color: '#fff' }}>{cardName}</span>
                     </div>
                     <div className="flex-col align-end">
-                      <span className="text-muted" style={{ fontSize: '0.5rem', color: '#ddd' }}>VENCE</span>
-                      <span className="text-xs font-bold">12 / 30</span>
+                      <span style={{ fontSize: '0.5rem', color: '#ddd' }}>VENCE</span>
+                      <span className="text-xs font-bold" style={{ color: '#fff' }}>12 / 30</span>
                     </div>
                   </div>
                 </div>
@@ -260,7 +260,7 @@ export const Plans: React.FC = () => {
                   </div>
                 </div>
 
-                <div className="flex-row justify-between align-center" style={{ borderTop: '1px solid hsla(var(--border-color), 0.5)', paddingTop: '12px' }}>
+                <div className="flex-row justify-between align-center" style={{ borderTop: '1px solid var(--color-border)', paddingTop: '12px' }}>
                   <span className="text-xs text-muted">Monto a pagar:</span>
                   <span className="text-sm font-bold text-gradient-primary">
                     {plansData.find(p => p.id === selectedPlan)?.price}

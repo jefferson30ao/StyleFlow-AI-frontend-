@@ -3,6 +3,7 @@ import { useApp } from '../context/AppContext';
 import type { GarmentCategory } from '../types';
 import { GarmentIcon } from '../components/GarmentIcon';
 import { Sparkles, Camera, ArrowRight, Check, RefreshCw, AlertCircle } from 'lucide-react';
+import logoImg from '../assets/logo.png';
 
 interface DemoGarment {
   name: string;
@@ -18,7 +19,7 @@ const DEMO_GARMENTS: DemoGarment[] = [
 ];
 
 export const Onboarding: React.FC = () => {
-  const { addGarment, completeOnboarding, simulateBgRemoval } = useApp();
+  const { addGarment, completeOnboarding, simulateBgRemoval, user } = useApp();
   const [step, setStep] = useState<1 | 2>(1);
   const [selectedDemo, setSelectedDemo] = useState<DemoGarment | null>(null);
   
@@ -28,7 +29,7 @@ export const Onboarding: React.FC = () => {
   const [processedGarment, setProcessedGarment] = useState<DemoGarment | null>(null);
   
   // User name input
-  const [userName, setUserName] = useState<string>('Valeria');
+  const [userName, setUserName] = useState<string>(user?.name || 'Valeria');
   const [digitizedCount, setDigitizedCount] = useState<number>(0);
   const [errorMsg, setErrorMsg] = useState<string>('');
 
@@ -90,8 +91,8 @@ export const Onboarding: React.FC = () => {
     <div className="flex-col w-full h-full justify-between" style={{ minHeight: '80vh' }}>
       {step === 1 ? (
         <div className="flex-col gap-lg mt-lg text-center align-center">
-          <div className="logo-glow floating-effect" style={{ width: '64px', height: '64px', borderRadius: '16px' }}>
-            <Sparkles size={32} style={{ color: '#fff' }} />
+          <div className="logo-glow" style={{ width: '64px', height: '64px', borderRadius: 'var(--radius-md)' }}>
+            <img src={logoImg} alt="StyleFlow AI" />
           </div>
           
           <div className="flex-col gap-sm">
@@ -117,7 +118,7 @@ export const Onboarding: React.FC = () => {
                 placeholder="Ej. Valeria" 
               />
               {errorMsg && (
-                <div className="flex-row align-center gap-xs mt-sm" style={{ color: 'hsl(var(--error))' }}>
+                <div className="flex-row align-center gap-xs mt-sm" style={{ color: 'var(--color-error)' }}>
                   <AlertCircle size={14} />
                   <span className="text-xs">{errorMsg}</span>
                 </div>
@@ -151,7 +152,7 @@ export const Onboarding: React.FC = () => {
                 style={{ 
                   width: '80px', 
                   height: '6px', 
-                  backgroundColor: 'hsla(var(--border-color), 1)',
+                  backgroundColor: 'var(--color-border)',
                   borderRadius: '3px',
                   overflow: 'hidden'
                 }}
@@ -160,7 +161,7 @@ export const Onboarding: React.FC = () => {
                   style={{ 
                     width: `${Math.min((digitizedCount / 3) * 100, 100)}%`, 
                     height: '100%', 
-                    background: 'linear-gradient(90deg, hsl(var(--primary)), hsl(var(--accent)))',
+                    background: 'var(--progress-gradient)',
                     transition: 'width 0.4s ease'
                   }}
                 />
@@ -177,16 +178,16 @@ export const Onboarding: React.FC = () => {
                   style={{
                     width: '140px',
                     height: '140px',
-                    borderRadius: '16px',
+                    borderRadius: 'var(--radius-md)',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
                     position: 'relative',
                     overflow: 'hidden',
                     background: isProcessed 
-                      ? 'repeating-conic-gradient(rgba(255, 255, 255, 0.05) 0% 25%, transparent 0% 50%) 50% / 16px 16px'
-                      : 'rgba(23, 27, 38, 0.9)',
-                    border: '1px solid hsla(var(--border-color), 1)'
+                      ? 'repeating-conic-gradient(var(--color-hover-lift) 0% 25%, transparent 0% 50%) 50% / 16px 16px'
+                      : 'var(--color-bg-muted)',
+                    border: '1px solid var(--color-border)'
                   }}
                 >
                   <GarmentIcon category={selectedDemo.category} color={selectedDemo.color} size={56} />
@@ -198,7 +199,7 @@ export const Onboarding: React.FC = () => {
                         style={{
                           position: 'absolute',
                           top: 0, right: 0, bottom: 0, left: 0,
-                          background: 'rgba(109, 40, 217, 0.15)',
+                          background: 'var(--color-hover-lift)',
                           backdropFilter: 'blur(1px)'
                         }}
                       />
@@ -266,11 +267,11 @@ export const Onboarding: React.FC = () => {
                     width: '60px',
                     height: '60px',
                     borderRadius: '50%',
-                    background: 'hsla(var(--border-color), 0.5)',
+                    background: 'var(--color-bg-muted)',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
-                    color: 'hsl(var(--text-muted))'
+                    color: 'var(--color-text-tertiary)'
                   }}
                 >
                   <Camera size={28} />
@@ -303,8 +304,8 @@ export const Onboarding: React.FC = () => {
           </div>
 
           {errorMsg && (
-            <div className="glass-card flex-row align-center gap-sm" style={{ borderLeft: '4px solid hsl(var(--error))', padding: '12px' }}>
-              <AlertCircle size={16} style={{ color: 'hsl(var(--error))' }} />
+            <div className="glass-card flex-row align-center gap-sm" style={{ borderLeft: '4px solid var(--color-error)', padding: '12px', background: 'var(--color-error-bg)' }}>
+              <AlertCircle size={16} style={{ color: 'var(--color-error)' }} />
               <span className="text-xs">{errorMsg}</span>
             </div>
           )}

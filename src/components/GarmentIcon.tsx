@@ -53,10 +53,10 @@ export const GarmentIcon: React.FC<GarmentIconProps> = ({ category, color, class
         width: '100%',
         height: '100%',
         backgroundColor: color,
-        borderRadius: '12px',
-        border: isLight ? '2px solid hsla(var(--border-color), 1)' : '1px solid rgba(255, 255, 255, 0.1)',
-        boxShadow: 'inset 0 4px 12px rgba(255,255,255,0.08), 0 4px 12px rgba(0,0,0,0.15)',
-        color: isLight ? '#1F2937' : '#FFFFFF',
+        borderRadius: 'var(--radius-md)',
+        border: '1px solid var(--color-border)',
+        boxShadow: 'inset 0 2px 8px rgba(255,255,255,0.06)',
+        color: isLight ? 'var(--color-text-primary)' : '#FFFFFF',
         position: 'relative',
         overflow: 'hidden'
       }}
@@ -73,7 +73,7 @@ export const GarmentIcon: React.FC<GarmentIconProps> = ({ category, color, class
         strokeLinejoin="round"
         style={{
           opacity: 0.95,
-          filter: isLight ? 'drop-shadow(0 2px 2px rgba(0,0,0,0.15))' : 'drop-shadow(0 2px 4px rgba(0,0,0,0.5))'
+          filter: isLight ? 'drop-shadow(0 2px 2px rgba(0,0,0,0.1))' : 'drop-shadow(0 2px 4px rgba(0,0,0,0.3))'
         }}
       >
         {renderPath()}
@@ -87,7 +87,7 @@ export const GarmentIcon: React.FC<GarmentIconProps> = ({ category, color, class
           left: 0,
           right: 0,
           bottom: 0,
-          background: 'linear-gradient(180deg, rgba(255,255,255,0.1) 0%, rgba(0,0,0,0.15) 100%)',
+          background: 'linear-gradient(180deg, rgba(255,255,255,0.06) 0%, rgba(0,0,0,0.08) 100%)',
           pointerEvents: 'none'
         }}
       />

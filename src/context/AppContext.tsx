@@ -1,43 +1,84 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
-import type { Garment, Outfit, PlanType, ActiveTab, UserProfile, StoreItem } from '../types';
+import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import type { Garment, Outfit, PlanType, ActiveTab, UserProfile, StoreItem, StyleProfile, BackendOutfit } from '../types';
+import { api, setAuthToken, getAuthToken, registerSessionExpiredCallback, mapWeatherCode } from '../services/api';
 
 interface AppContextProps {
-  user: UserProfile;
+  // Session / Auth States
+  isAuthenticated: boolean;
+  isAuthenticating: boolean;
+  user: UserProfile | null;
+  login: (email: string, password: string) => Promise<void>;
+  register: (email: string, password: string) => Promise<void>;
+  logout: () => void;
+  authError: string;
+  setAuthError: (err: string) => void;
+
+  // Closet / Wardrobe
   closet: Garment[];
+  fetchCloset: () => Promise<void>;
+  addGarment: (garment: Omit<Garment, 'id'>) => Promise<boolean>;
+  deleteGarment: (id: string) => Promise<void>;
+  
+  // Custom upload
+  uploadGarmentFile: (file: File) => Promise<{
+    imageKey: string;
+    classification: any;
+    classificationError: string | null;
+    backgroundRemoved: boolean;
+  }>;
+  confirmGarment: (data: {
+    imageKey: string;
+    category: string;
+    subcategory?: string;
+    primaryColor?: string;
+    secondaryColors?: string[];
+    style?: string;
+    season?: string[];
+    material?: string;
+    aiConfidence?: number;
+  }) => Promise<boolean>;
+
+  // Style Profile
+  styleProfile: StyleProfile | null;
+  fetchProfile: () => Promise<void>;
+  updateStyleProfile: (data: Partial<Omit<StyleProfile, 'userId'>>) => Promise<void>;
+
+  // Location / Geolocation
+  coords: { lat: number; lon: number } | null;
+  gpsAllowed: boolean;
+  requestGps: () => Promise<boolean>;
+
+  // Weather & Recommendations
   currentWeather: { temp: number; condition: string; id: string };
   currentAgenda: string;
   setCurrentAgenda: (agenda: string) => void;
+  recommendedOutfit: Outfit | null;
+  allOutfits: Outfit[];
+  generateRecommendations: (baseGarmentId?: string) => Promise<void>;
+  isGeneratingRecs: boolean;
+  recsError: string;
+
+  // Outfit actions
+  saveOutfit: (outfitId: string) => Promise<void>;
+  wearOutfit: (outfitId: string, date?: string) => Promise<void>;
+  discardOutfit: (outfitId: string) => Promise<void>;
+
+  // Outfit History
+  outfitsHistory: BackendOutfit[];
+  fetchOutfitsHistory: (status?: 'suggested' | 'saved' | 'worn' | 'discarded') => Promise<void>;
+
+  // Navigation & Plan (Mocks preserved for payment)
   activeTab: ActiveTab;
   setActiveTab: (tab: ActiveTab) => void;
   setPlan: (plan: PlanType) => void;
-  addGarment: (garment: Omit<Garment, 'id'>) => Promise<boolean>;
-  deleteGarment: (id: string) => void;
-  simulateBgRemoval: (imageUrl: string) => Promise<string>;
-  recommendedOutfit: Outfit | null;
-  allOutfits: Outfit[];
-  feedbackOutfit: (outfitId: string, rating: 'like' | 'dislike') => void;
   storeItems: StoreItem[];
   isOnboarded: boolean;
   completeOnboarding: () => void;
+  simulateBgRemoval: (imageUrl: string) => Promise<string>;
+  feedbackOutfit: (outfitId: string, rating: 'like' | 'dislike') => void;
 }
 
 const AppContext = createContext<AppContextProps | undefined>(undefined);
-
-// Initial Mock Wardrobe Seed
-const INITIAL_CLOSET: Garment[] = [
-  { id: '1', name: 'Blazer Sastre Negro', category: 'outerwear', color: '#111827', imageUrl: 'blazer', hasBgRemoved: true },
-  { id: '2', name: 'Blusa de Seda Crema', category: 'tops', color: '#FFFDF0', imageUrl: 'blouse', hasBgRemoved: true },
-  { id: '3', name: 'Jeans Tiro Alto Azul', category: 'bottoms', color: '#1D4ED8', imageUrl: 'jeans', hasBgRemoved: true },
-  { id: '4', name: 'Saco de Lana Camel', category: 'outerwear', color: '#D97706', imageUrl: 'coat', hasBgRemoved: true },
-  { id: '5', name: 'Polo Algodón Blanco', category: 'tops', color: '#FFFFFF', imageUrl: 'tshirt', hasBgRemoved: true },
-  { id: '6', name: 'Pantalón Sastre Plomo', category: 'bottoms', color: '#4B5563', imageUrl: 'pants', hasBgRemoved: true },
-  { id: '7', name: 'Zapatillas Cuero Blanco', category: 'shoes', color: '#F9FAFB', imageUrl: 'sneakers', hasBgRemoved: true },
-  { id: '8', name: 'Mocasines Cuero Negro', category: 'shoes', color: '#1F2937', imageUrl: 'loafers', hasBgRemoved: true },
-  { id: '9', name: 'Cartera Tote de Cuero', category: 'accessories', color: '#78350F', imageUrl: 'bag', hasBgRemoved: true },
-  { id: '10', name: 'Reloj Analógico Plata', category: 'accessories', color: '#9CA3AF', imageUrl: 'watch', hasBgRemoved: true },
-  { id: '11', name: 'Lentes de Sol Carey', category: 'accessories', color: '#4B2C0A', imageUrl: 'sunglasses', hasBgRemoved: true },
-  { id: '12', name: 'Botas de Gamuza Marrón', category: 'shoes', color: '#5B3E31', imageUrl: 'boots', hasBgRemoved: true }
-];
 
 // Sustainable local brands mock store items
 const STORE_ITEMS: StoreItem[] = [
@@ -83,48 +124,432 @@ const STORE_ITEMS: StoreItem[] = [
   }
 ];
 
+
+
 export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  // Navigation & Plan states
   const [isOnboarded, setIsOnboarded] = useState<boolean>(() => {
-    const saved = localStorage.getItem('sf_onboarded');
-    return saved === 'true';
+    return localStorage.getItem('sf_onboarded') === 'true';
   });
+  const [activeTab, setActiveTab] = useState<ActiveTab>('dashboard');
 
-  const [user, setUser] = useState<UserProfile>(() => {
-    const saved = localStorage.getItem('sf_user');
-    return saved ? JSON.parse(saved) : {
-      name: 'Valeria Torres',
-      email: 'valeria.torres@sistemas.unmsm.edu.pe',
-      avatarUrl: 'https://api.dicebear.com/7.x/adventurer/svg?seed=Valeria',
-      plan: 'free'
-    };
-  });
+  // Auth States
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
+  const [isAuthenticating, setIsAuthenticating] = useState<boolean>(true);
+  const [user, setUser] = useState<UserProfile | null>(null);
+  const [authError, setAuthError] = useState<string>('');
 
-  const [closet, setCloset] = useState<Garment[]>(() => {
-    const saved = localStorage.getItem('sf_closet');
-    return saved ? JSON.parse(saved) : INITIAL_CLOSET;
-  });
+  // Closet / Profile / History States
+  const [closet, setCloset] = useState<Garment[]>([]);
+  const [styleProfile, setStyleProfile] = useState<StyleProfile | null>(null);
+  const [outfitsHistory, setOutfitsHistory] = useState<BackendOutfit[]>([]);
 
+  // Geolocation States
+  const [coords, setCoords] = useState<{ lat: number; lon: number } | null>(null);
+  const [gpsAllowed, setGpsAllowed] = useState<boolean>(false);
+
+  // Recommendations / Weather States
   const [currentWeather, setCurrentWeather] = useState({
     temp: 17,
-    condition: 'Nublado y Llovizna leve (Típico de Lima)',
+    condition: 'Neblina limeña (GPS desactivado)',
     id: 'cloudy'
   });
-
   const [currentAgenda, setCurrentAgenda] = useState<string>('work');
-  const [activeTab, setActiveTab] = useState<ActiveTab>('dashboard');
   const [recommendedOutfit, setRecommendedOutfit] = useState<Outfit | null>(null);
+  const [allOutfits, setAllOutfits] = useState<Outfit[]>([]);
+  const [isGeneratingRecs, setIsGeneratingRecs] = useState<boolean>(false);
+  const [recsError, setRecsError] = useState<string>('');
 
-  // Synchronize storage
-  useEffect(() => {
-    localStorage.setItem('sf_user', JSON.stringify(user));
-  }, [user]);
+  // Resolve BackendOutfit to frontend Outfit
+  const resolveOutfit = useCallback((backendOutfit: BackendOutfit, closetList: Garment[]): Outfit => {
+    const list = closetList.length > 0 ? closetList : closet;
+    
+    // Helper to find by category
+    const findGarment = (cat: string) => {
+      const gId = backendOutfit.garmentIds.find(id => {
+        const item = list.find(c => c.id === id);
+        return item && item.category === cat;
+      });
+      return list.find(c => c.id === gId);
+    };
 
-  useEffect(() => {
-    localStorage.setItem('sf_closet', JSON.stringify(closet));
+    const topsItem = findGarment('tops') || list.find(c => c.category === 'tops') || list[0];
+    const bottomsItem = findGarment('bottoms') || list.find(c => c.category === 'bottoms') || list[0];
+    const shoesItem = findGarment('shoes') || list.find(c => c.category === 'shoes') || list[0];
+    const outerwearItem = findGarment('outerwear') || list.find(c => c.category === 'outerwear');
+    
+    const accessoriesList = list.filter(c => 
+      c.category === 'accessories' && backendOutfit.garmentIds.includes(c.id)
+    );
+
+    const wCode = backendOutfit.weatherContext?.weatherCode ?? 1;
+    const wMapped = mapWeatherCode(wCode);
+
+    return {
+      id: backendOutfit.id,
+      name: backendOutfit.occasion 
+        ? `Estilo ${backendOutfit.occasion.charAt(0).toUpperCase() + backendOutfit.occasion.slice(1)}`
+        : 'Sugerencia de Diario',
+      tops: topsItem,
+      bottoms: bottomsItem,
+      shoes: shoesItem,
+      outerwear: outerwearItem,
+      accessories: accessoriesList.length > 0 ? accessoriesList : undefined,
+      suitabilityWeather: [wMapped.id],
+      suitabilityAgenda: [backendOutfit.occasion || 'casual'],
+      description: `Recomendación inteligente para tu agenda de ${backendOutfit.occasion || 'diario'} con clima templado de ${backendOutfit.weatherContext?.temperatureC ?? 18}°C.`,
+      backendOutfit
+    };
   }, [closet]);
 
+  // Load Initial Data
+  const loadData = useCallback(async () => {
+    try {
+      const garmentsList = await api.garments.list();
+      setCloset(garmentsList);
+
+      const profile = await api.profile.getProfile();
+      setStyleProfile(profile);
+
+      // Fetch history
+      const history = await api.outfits.listOutfits();
+      setOutfitsHistory(history);
+    } catch (err) {
+      console.error('Error al cargar datos del backend:', err);
+    }
+  }, []);
+
+  // Validate session on startup
+  useEffect(() => {
+    const validateSession = async () => {
+      const token = getAuthToken();
+      if (!token) {
+        setIsAuthenticating(false);
+        return;
+      }
+
+      try {
+        const res = await api.auth.getMe();
+        // Set basic user profile
+        setUser({
+          name: res.user.email.split('@')[0],
+          email: res.user.email,
+          avatarUrl: `https://api.dicebear.com/7.x/adventurer/svg?seed=${res.user.id}`,
+          plan: (localStorage.getItem('sf_plan') as PlanType) || 'free'
+        });
+        setIsAuthenticated(true);
+        await loadData();
+      } catch (err) {
+        console.error('Sesión inválida al arrancar:', err);
+        setAuthToken('');
+      } finally {
+        setIsAuthenticating(false);
+      }
+    };
+
+    validateSession();
+
+    // Register callback for when session expires (401 response)
+    registerSessionExpiredCallback(() => {
+      setIsAuthenticated(false);
+      setUser(null);
+      setCloset([]);
+      setStyleProfile(null);
+      setOutfitsHistory([]);
+      setActiveTab('dashboard');
+    });
+  }, [loadData]);
+
+  // Fetch functions
+  const fetchCloset = async () => {
+    try {
+      const list = await api.garments.list();
+      setCloset(list);
+    } catch (err: any) {
+      console.error(err);
+    }
+  };
+
+  const fetchProfile = async () => {
+    try {
+      const prof = await api.profile.getProfile();
+      setStyleProfile(prof);
+    } catch (err: any) {
+      console.error(err);
+    }
+  };
+
+  const fetchOutfitsHistory = async (status?: 'suggested' | 'saved' | 'worn' | 'discarded') => {
+    try {
+      const list = await api.outfits.listOutfits(status);
+      setOutfitsHistory(list);
+    } catch (err: any) {
+      console.error(err);
+    }
+  };
+
+  // Auth Operations
+  const login = async (email: string, password: string) => {
+    setAuthError('');
+    try {
+      const res = await api.auth.signin(email, password);
+      const userProfile: UserProfile = {
+        name: res.user.email.split('@')[0],
+        email: res.user.email,
+        avatarUrl: `https://api.dicebear.com/7.x/adventurer/svg?seed=${res.user.id}`,
+        plan: (localStorage.getItem('sf_plan') as PlanType) || 'free'
+      };
+      setUser(userProfile);
+      setIsAuthenticated(true);
+      await loadData();
+    } catch (err: any) {
+      setAuthError(err.message || 'Error al iniciar sesión.');
+      throw err;
+    }
+  };
+
+  const register = async (email: string, password: string) => {
+    setAuthError('');
+    try {
+      const res = await api.auth.signup(email, password);
+      const userProfile: UserProfile = {
+        name: res.user.email.split('@')[0],
+        email: res.user.email,
+        avatarUrl: `https://api.dicebear.com/7.x/adventurer/svg?seed=${res.user.id}`,
+        plan: 'free'
+      };
+      setUser(userProfile);
+      setIsAuthenticated(true);
+      await loadData();
+    } catch (err: any) {
+      setAuthError(err.message || 'Error al registrar usuario.');
+      throw err;
+    }
+  };
+
+  const logout = () => {
+    setAuthToken('');
+    setIsAuthenticated(false);
+    setUser(null);
+    setCloset([]);
+    setStyleProfile(null);
+    setOutfitsHistory([]);
+    setIsOnboarded(false);
+    localStorage.removeItem('sf_onboarded');
+    setActiveTab('dashboard');
+  };
+
+  // Style Profile Operations
+  const updateStyleProfile = async (data: Partial<Omit<StyleProfile, 'userId'>>) => {
+    try {
+      const updated = await api.profile.updateProfile(data);
+      setStyleProfile(updated);
+    } catch (err: any) {
+      console.error(err);
+      throw err;
+    }
+  };
+
+  // Request GPS Permissions
+  const requestGps = async (): Promise<boolean> => {
+    return new Promise((resolve) => {
+      if (!navigator.geolocation) {
+        setGpsAllowed(false);
+        resolve(false);
+        return;
+      }
+
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          setCoords({
+            lat: position.coords.latitude,
+            lon: position.coords.longitude
+          });
+          setGpsAllowed(true);
+          resolve(true);
+        },
+        (error) => {
+          console.warn('GPS permiso denegado:', error);
+          setGpsAllowed(false);
+          resolve(false);
+        },
+        { enableHighAccuracy: true, timeout: 5000 }
+      );
+    });
+  };
+
+  // Generate Recommendations with live coordinates
+  const generateRecommendations = async (baseGarmentId?: string) => {
+    if (!gpsAllowed || !coords) {
+      const allowed = await requestGps();
+      if (!allowed) {
+        setRecsError('Se requiere geolocalización para generar recomendaciones basadas en el clima real de Lima.');
+        return;
+      }
+    }
+
+    if (!coords) return;
+
+    setIsGeneratingRecs(true);
+    setRecsError('');
+    try {
+      const rawOutfits = await api.recommendations.getRecommendations({
+        occasion: currentAgenda,
+        lat: coords.lat,
+        lon: coords.lon,
+        baseGarmentId
+      });
+
+      if (rawOutfits.length > 0) {
+        const resolvedList = rawOutfits.map((o: BackendOutfit) => resolveOutfit(o, closet));
+        setAllOutfits(resolvedList);
+        setRecommendedOutfit(resolvedList[0]);
+        
+        // Update weather from context returned
+        const wCtx = rawOutfits[0].weatherContext;
+        if (wCtx) {
+          const wMapped = mapWeatherCode(wCtx.weatherCode);
+          setCurrentWeather({
+            temp: Math.round(wCtx.temperatureC),
+            condition: wMapped.condition,
+            id: wMapped.id
+          });
+        }
+      } else {
+        setAllOutfits([]);
+        setRecommendedOutfit(null);
+      }
+    } catch (err: any) {
+      setRecsError(err.message || 'Error al obtener recomendaciones.');
+    } finally {
+      setIsGeneratingRecs(false);
+    }
+  };
+
+  // Fetch recommendations automatically when coords or agenda changes
+  useEffect(() => {
+    if (isAuthenticated && coords) {
+      generateRecommendations();
+    }
+  }, [currentAgenda, coords, isAuthenticated]);
+
+  // Outfit actions
+  const saveOutfit = async (outfitId: string) => {
+    try {
+      const updated = await api.outfits.saveOutfit(outfitId);
+      // Update recommended outfit status
+      if (recommendedOutfit && recommendedOutfit.id === outfitId) {
+        setRecommendedOutfit(prev => prev ? {
+          ...prev,
+          backendOutfit: updated
+        } : null);
+      }
+      await fetchOutfitsHistory();
+    } catch (err: any) {
+      console.error(err);
+    }
+  };
+
+  const wearOutfit = async (outfitId: string, date?: string) => {
+    try {
+      const updated = await api.outfits.wearOutfit(outfitId, date);
+      if (recommendedOutfit && recommendedOutfit.id === outfitId) {
+        setRecommendedOutfit(prev => prev ? {
+          ...prev,
+          backendOutfit: updated
+        } : null);
+      }
+      await fetchOutfitsHistory();
+      await fetchCloset(); // Refresh garments timesWorn and lastWornAt
+    } catch (err: any) {
+      console.error(err);
+    }
+  };
+
+  const discardOutfit = async (outfitId: string) => {
+    try {
+      const updated = await api.outfits.discardOutfit(outfitId);
+      if (recommendedOutfit && recommendedOutfit.id === outfitId) {
+        setRecommendedOutfit(prev => prev ? {
+          ...prev,
+          backendOutfit: updated
+        } : null);
+      }
+      await fetchOutfitsHistory();
+    } catch (err: any) {
+      console.error(err);
+    }
+  };
+
+  // Real Image Upload
+  const uploadGarmentFile = async (file: File) => {
+    try {
+      const res = await api.garments.upload(file);
+      return {
+        imageKey: res.imageKey,
+        classification: res.classification,
+        classificationError: res.classificationError,
+        backgroundRemoved: res.backgroundRemoved
+      };
+    } catch (err: any) {
+      console.error('Error uploading file:', err);
+      throw err;
+    }
+  };
+
+  const confirmGarment = async (data: any): Promise<boolean> => {
+    // Pro limit check
+    if (user?.plan === 'free' && closet.length >= 20) {
+      return false;
+    }
+    try {
+      const created = await api.garments.create(data);
+      setCloset(prev => [created, ...prev]);
+      return true;
+    } catch (err: any) {
+      console.error('Error confirming garment:', err);
+      throw err;
+    }
+  };
+
+  // Mock addGarment (falls back to creating a dummy item in backend or local)
+  const addGarment = async (garment: Omit<Garment, 'id'>): Promise<boolean> => {
+    if (user?.plan === 'free' && closet.length >= 20) {
+      return false;
+    }
+    try {
+      // Create mockup imageKey and upload
+      const dummyItem = {
+        imageKey: `mock_${Math.random().toString(36).substring(2, 9)}.png`,
+        category: garment.category,
+        primaryColor: garment.color,
+        subcategory: garment.name
+      };
+      const created = await api.garments.create(dummyItem);
+      setCloset(prev => [created, ...prev]);
+      return true;
+    } catch (err: any) {
+      console.error(err);
+      return false;
+    }
+  };
+
+  const deleteGarment = async (id: string) => {
+    try {
+      await api.garments.delete(id);
+      setCloset(prev => prev.filter(item => item.id !== id));
+    } catch (err: any) {
+      console.error(err);
+    }
+  };
+
+  // Mock updates for premium plan simulations
   const setPlan = (plan: PlanType) => {
-    setUser(prev => ({ ...prev, plan }));
+    if (user) {
+      const updatedUser = { ...user, plan };
+      setUser(updatedUser);
+      localStorage.setItem('sf_plan', plan);
+    }
   };
 
   const completeOnboarding = () => {
@@ -134,7 +559,6 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   };
 
   const simulateBgRemoval = async (imageUrl: string): Promise<string> => {
-    // Simulates the < 5s background removal (taking 2s here for a great visual spinner)
     return new Promise((resolve) => {
       setTimeout(() => {
         resolve(imageUrl + '_bg_removed');
@@ -142,126 +566,53 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     });
   };
 
-  const addGarment = async (garment: Omit<Garment, 'id'>): Promise<boolean> => {
-    // Plan Limits
-    if (user.plan === 'free' && closet.length >= 20) {
-      return false; // Limit exceeded
-    }
-
-    const newGarment: Garment = {
-      ...garment,
-      id: Math.random().toString(36).substring(2, 9),
-      isCustom: true
-    };
-
-    setCloset(prev => [newGarment, ...prev]);
-    return true;
-  };
-
-  const deleteGarment = (id: string) => {
-    setCloset(prev => prev.filter(item => item.id !== id));
-  };
-
-  // Weather simulation change
-  useEffect(() => {
-    if (currentAgenda === 'casual') {
-      setCurrentWeather({ temp: 22, condition: 'Despejado templado', id: 'sunny' });
-    } else if (currentAgenda === 'college') {
-      setCurrentWeather({ temp: 18, condition: 'Nublado y Ventoso', id: 'windy' });
-    } else if (currentAgenda === 'work') {
-      setCurrentWeather({ temp: 16, condition: 'Neblina Limeña', id: 'cloudy' });
-    } else {
-      setCurrentWeather({ temp: 14, condition: 'Llovizna persistente', id: 'cold' });
-    }
-  }, [currentAgenda]);
-
-  // Generación Inteligente de Combinaciones Mock (Mix & Match Logic)
-  const allOutfits: Outfit[] = [
-    {
-      id: 'o1',
-      name: 'Smart Casual de Invierno',
-      tops: closet.find(c => c.id === '2') || closet[1], // Blusa Crema
-      bottoms: closet.find(c => c.id === '6') || closet[5], // Pantalón Plomo
-      outerwear: closet.find(c => c.id === '1') || closet[0], // Blazer Negro
-      shoes: closet.find(c => c.id === '8') || closet[7], // Mocasines
-      accessories: [closet.find(c => c.id === '9') || closet[8], closet.find(c => c.id === '10') || closet[9]] as Garment[],
-      suitabilityWeather: ['cloudy', 'windy', 'cold'],
-      suitabilityAgenda: ['work', 'college'],
-      description: 'Un look formal pero cómodo para reuniones de oficina o clases importantes en UNMSM.'
-    },
-    {
-      id: 'o2',
-      name: 'Estilo Urbano de Fin de Semana',
-      tops: closet.find(c => c.id === '5') || closet[4], // Polo Blanco
-      bottoms: closet.find(c => c.id === '3') || closet[2], // Jeans Azul
-      outerwear: closet.find(c => c.id === '4') || closet[3], // Saco Camel
-      shoes: closet.find(c => c.id === '7') || closet[6], // Zapatillas Blancas
-      accessories: [closet.find(c => c.id === '11') || closet[10]] as Garment[],
-      suitabilityWeather: ['sunny', 'windy', 'cloudy'],
-      suitabilityAgenda: ['casual', 'college'],
-      description: 'Combinación perfecta y abrigadora para salir por Miraflores o Barranco con amigos.'
-    },
-    {
-      id: 'o3',
-      name: 'OOTD Ejecutivo Contemporáneo',
-      tops: closet.find(c => c.id === '2') || closet[1], // Blusa Crema
-      bottoms: closet.find(c => c.id === '6') || closet[5], // Pantalón Plomo
-      outerwear: closet.find(c => c.id === '4') || closet[3], // Saco Camel
-      shoes: closet.find(c => c.id === '12') || closet[11], // Botas Marrón
-      accessories: [closet.find(c => c.id === '9') || closet[8]] as Garment[],
-      suitabilityWeather: ['cold', 'cloudy'],
-      suitabilityAgenda: ['work', 'date'],
-      description: 'Alinea elegancia y calidez frente a la neblina invernal limeña.'
-    },
-    {
-      id: 'o4',
-      name: 'Noche Chic Informal',
-      tops: closet.find(c => c.id === '5') || closet[4], // Polo Blanco
-      bottoms: closet.find(c => c.id === '3') || closet[2], // Jeans Azul
-      outerwear: closet.find(c => c.id === '1') || closet[0], // Blazer Negro
-      shoes: closet.find(c => c.id === '8') || closet[7], // Mocasines Negro
-      accessories: [closet.find(c => c.id === '11') || closet[10], closet.find(c => c.id === '10') || closet[9]] as Garment[],
-      suitabilityWeather: ['sunny', 'windy', 'cloudy', 'cold'],
-      suitabilityAgenda: ['date', 'casual'],
-      description: 'Ideal para una cena de noche o una reunión semi-formal.'
-    }
-  ];
-
-  // Dynamic selector of daily outfits
-  useEffect(() => {
-    // Find outfit matching current agenda and weather
-    const match = allOutfits.find(o =>
-      o.suitabilityAgenda.includes(currentAgenda) &&
-      o.suitabilityWeather.includes(currentWeather.id)
-    ) || allOutfits[0];
-
-    setRecommendedOutfit(match);
-  }, [currentAgenda, currentWeather]);
-
   const feedbackOutfit = (outfitId: string, rating: 'like' | 'dislike') => {
-    // Simulates training the neural network
     console.log(`AI Feedbacks: User rated outfit ${outfitId} as ${rating}`);
   };
 
   return (
     <AppContext.Provider value={{
+      isAuthenticated,
+      isAuthenticating,
       user,
+      login,
+      register,
+      logout,
+      authError,
+      setAuthError,
       closet,
+      fetchCloset,
+      addGarment,
+      deleteGarment,
+      uploadGarmentFile,
+      confirmGarment,
+      styleProfile,
+      fetchProfile,
+      updateStyleProfile,
+      coords,
+      gpsAllowed,
+      requestGps,
       currentWeather,
       currentAgenda,
       setCurrentAgenda,
+      recommendedOutfit,
+      allOutfits,
+      generateRecommendations,
+      isGeneratingRecs,
+      recsError,
+      saveOutfit,
+      wearOutfit,
+      discardOutfit,
+      outfitsHistory,
+      fetchOutfitsHistory,
       activeTab,
       setActiveTab,
       setPlan,
-      addGarment,
-      deleteGarment,
-      simulateBgRemoval,
-      recommendedOutfit,
-      allOutfits,
-      feedbackOutfit,
       storeItems: STORE_ITEMS,
       isOnboarded,
-      completeOnboarding
+      completeOnboarding,
+      simulateBgRemoval,
+      feedbackOutfit
     }}>
       {children}
     </AppContext.Provider>

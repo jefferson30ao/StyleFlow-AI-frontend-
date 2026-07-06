@@ -4,4 +4,13 @@ import react from '@vitejs/plugin-react'
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [react()],
+  server: {
+    proxy: {
+      '/api': {
+        target: 'https://styleflow-api.s4vi0r.tech',
+        changeOrigin: true,
+        secure: true,
+      }
+    }
+  }
 })
