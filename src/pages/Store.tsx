@@ -36,17 +36,25 @@ export const Store: React.FC = () => {
         {storeItems.map(item => (
           <div key={item.id} className="glass-card flex-row gap-md align-center" style={{ padding: '12px' }}>
             {/* Visual Icon Box */}
-            <div style={{ width: '80px', height: '80px', flexShrink: 0 }}>
-              <GarmentIcon 
-                category={item.category} 
-                color={
-                  item.id === 's1' ? '#93c5fd' : // celeste lino
-                  item.id === 's2' ? '#d1fae5' : // culotte beige/menta
-                  item.id === 's3' ? '#34d399' : // eco-nylon verde
-                  '#fca5a5'                      // canvas rosa/beige
-                } 
-                size={24} 
-              />
+            <div style={{ width: '80px', height: '80px', flexShrink: 0, borderRadius: 'var(--radius-md)', overflow: 'hidden', border: '1px solid var(--color-border)' }}>
+              {item.imageUrl && (item.imageUrl.startsWith('http') || item.imageUrl.startsWith('/')) ? (
+                <img 
+                  src={item.imageUrl} 
+                  alt={item.name} 
+                  style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
+                />
+              ) : (
+                <GarmentIcon 
+                  category={item.category} 
+                  color={
+                    item.id === 's1' ? '#93c5fd' : // celeste lino
+                    item.id === 's2' ? '#d1fae5' : // culotte beige/menta
+                    item.id === 's3' ? '#34d399' : // eco-nylon verde
+                    '#fca5a5'                      // canvas rosa/beige
+                  } 
+                  size={24} 
+                />
+              )}
             </div>
 
             {/* Info details */}

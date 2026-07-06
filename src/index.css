@@ -828,3 +828,76 @@ select.input-glass {
 .close-ad-button:hover {
   background-color: rgba(0, 0, 0, 0.8);
 }
+
+/* ============================================================
+   INFINITE FASHION CAROUSEL (MARQUEE)
+   ============================================================ */
+@keyframes marquee {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(-50%);
+  }
+}
+
+.marquee-container {
+  overflow: hidden;
+  width: 100%;
+  position: relative;
+  display: flex;
+  padding: 10px 0;
+  margin-top: 6px;
+  /* Fade edges for premium editorial aesthetic */
+  mask-image: linear-gradient(to right, transparent, white 12%, white 88%, transparent);
+  -webkit-mask-image: linear-gradient(to right, transparent, white 12%, white 88%, transparent);
+}
+
+.marquee-track {
+  display: flex;
+  width: max-content;
+  gap: 12px;
+  animation: marquee 28s linear infinite;
+}
+
+.marquee-track:hover {
+  animation-play-state: paused;
+}
+
+.marquee-image {
+  width: 84px;
+  height: 126px;
+  object-fit: cover;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-border);
+  box-shadow: var(--shadow-sm);
+  flex-shrink: 0;
+  transition: transform var(--motion-base) var(--easing), border-color var(--motion-base) var(--easing), box-shadow var(--motion-base) var(--easing);
+}
+
+.marquee-image:hover {
+  transform: translateY(-4px) scale(1.04);
+  border-color: var(--color-accent-champagne);
+  box-shadow: 0 4px 12px rgba(107, 46, 42, 0.12);
+}
+
+.carousel-section {
+  width: 100%;
+  margin-top: 14px;
+}
+
+/* Eternal glow animation around the AI result card */
+@keyframes eternal-glow {
+  0%, 100% {
+    box-shadow: 0 0 12px rgba(167, 139, 250, 0.3), 0 0 4px rgba(167, 139, 250, 0.1);
+    border-color: rgba(167, 139, 250, 0.5);
+  }
+  50% {
+    box-shadow: 0 0 24px rgba(167, 139, 250, 0.7), 0 0 8px rgba(167, 139, 250, 0.3);
+    border-color: rgba(167, 139, 250, 0.9);
+  }
+}
+.eternal-glow-effect {
+  animation: eternal-glow 3s ease-in-out infinite;
+}
+

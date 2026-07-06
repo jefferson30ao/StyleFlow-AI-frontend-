@@ -1,0 +1,566 @@
+/* ============================================================
+   NaskIA Floating Conversation Bubble & Chat Dialog Styles
+   ============================================================ */
+
+/* --- Floating bubble container --- */
+.naskia-bubble-container {
+  position: fixed;
+  bottom: calc(76px + var(--safe-bottom));
+  right: 20px;
+  z-index: 99;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  transition: transform var(--motion-base) var(--easing), filter var(--motion-base) var(--easing);
+}
+
+.naskia-bubble-container:hover {
+  transform: translateY(-4px) scale(1.05);
+}
+
+.naskia-bubble-container:active {
+  transform: translateY(-2px) scale(0.98);
+}
+
+@media (min-width: 481px) {
+  .naskia-bubble-container {
+    right: calc(50% - 225px); /* Pin to the right margin of 480px container */
+  }
+}
+
+/* --- Coming soon banner inside the bubble --- */
+.naskia-bubble-coming-soon {
+  background: linear-gradient(135deg, var(--color-elite), var(--color-accent-champagne));
+  color: #FFFFFF;
+  padding: 1px 5px;
+  border-radius: var(--radius-full);
+  font-size: 0.46rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  box-shadow: 0 1px 3px rgba(166, 132, 76, 0.15);
+  border: 0.5px solid rgba(255, 255, 255, 0.2);
+  white-space: nowrap;
+  margin-top: 1px;
+}
+
+/* --- Main Bubble Graphic (Horizontal Row) --- */
+.naskia-bubble-main {
+  background-color: rgba(255, 255, 255, 0.88);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1.5px solid var(--color-elite);
+  border-radius: 20px;
+  padding: 6px 12px 6px 8px;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 8px;
+  box-shadow: 0 4px 16px rgba(166, 132, 76, 0.15);
+  transition: border-color var(--motion-base) var(--easing), background-color var(--motion-base) var(--easing);
+  position: relative;
+}
+
+[data-theme="dark"] .naskia-bubble-main {
+  background-color: rgba(30, 22, 22, 0.92);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.35);
+}
+
+.naskia-bubble-text-col {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 1px;
+}
+
+.naskia-bubble-header {
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--color-text-primary);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  font-family: var(--font-sans);
+  line-height: 1.1;
+}
+
+.naskia-bubble-header b {
+  font-weight: 800;
+  color: var(--color-elite);
+}
+
+/* Compact avatar size for horizontal layout */
+.naskia-bubble-avatar-wrapper {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  overflow: hidden;
+  border: 1px solid rgba(166, 132, 76, 0.25);
+  background-color: #FFFFFF;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.naskia-bubble-avatar-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.naskia-bubble-footer {
+  font-size: 0.68rem;
+  font-weight: 600;
+  color: var(--color-text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  font-family: var(--font-sans);
+  line-height: 1.1;
+  margin-top: 1px;
+}
+
+.naskia-bubble-footer b {
+  font-weight: 800;
+  color: var(--color-elite);
+}
+
+/* --- Modal Overlay & Container --- */
+.naskia-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: var(--color-overlay);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+}
+
+.naskia-modal-container {
+  width: 100%;
+  max-width: 400px;
+  background-color: var(--color-bg-surface);
+  border: 1.5px solid var(--color-elite);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-overlay);
+  display: flex;
+  flex-direction: column;
+  max-height: 80vh;
+  overflow: hidden;
+  animation: naskia-slide-up 0.35s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+
+@keyframes naskia-slide-up {
+  from {
+    opacity: 0;
+    transform: translateY(24px) scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* --- Modal Header --- */
+.naskia-modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 14px 18px;
+  border-bottom: 1px solid var(--color-border);
+  background-color: var(--color-bg-muted);
+}
+
+.naskia-modal-header-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.naskia-modal-title {
+  font-family: var(--font-sans);
+  font-size: 0.95rem;
+  font-weight: 500;
+  color: var(--color-text-primary);
+  line-height: 1.2;
+}
+
+.naskia-modal-title b {
+  font-weight: 800;
+  color: var(--color-elite);
+}
+
+.naskia-sparkle-icon {
+  color: var(--color-elite);
+  animation: spin-slow 8s linear infinite;
+}
+
+@keyframes spin-slow {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.naskia-modal-subtitle {
+  font-size: 0.68rem;
+  color: var(--color-text-tertiary);
+  font-weight: 500;
+}
+
+.naskia-modal-close-btn {
+  background: none;
+  border: none;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  padding: 6px;
+  border-radius: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  transition: background-color var(--motion-fast) var(--easing), color var(--motion-fast) var(--easing);
+}
+
+.naskia-modal-close-btn:hover {
+  background-color: var(--color-border);
+  color: var(--color-text-primary);
+}
+
+/* --- Modal Chat Body (Large Avatar Layout) --- */
+.naskia-modal-chat-body {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  background-color: var(--color-bg-base);
+}
+
+.naskia-modal-large-body {
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+.naskia-giant-avatar-wrapper-container {
+  position: relative;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 310px;
+}
+
+/* Increased giant avatar size to occupy almost all body */
+.naskia-giant-avatar-wrapper {
+  position: relative;
+  width: 240px;
+  height: 240px;
+  border-radius: 50%;
+  border: 3.5px solid var(--color-elite);
+  background-color: #FFFFFF;
+  box-shadow: 0 10px 30px rgba(166, 132, 76, 0.35);
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: box-shadow var(--motion-base) var(--easing);
+}
+
+[data-theme="dark"] .naskia-giant-avatar-wrapper {
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+  background-color: #1E1616;
+}
+
+.naskia-giant-avatar-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* --- Floating Speech Bubble Overlay --- */
+.naskia-giant-bubble {
+  position: absolute;
+  top: 0px;
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: var(--color-bg-surface);
+  border: 1.5px solid var(--color-elite);
+  color: var(--color-text-primary);
+  border-radius: 16px;
+  padding: 10px 16px;
+  max-width: 90%;
+  box-shadow: var(--shadow-overlay);
+  font-size: 0.78rem;
+  line-height: 1.45;
+  z-index: 10;
+  animation: bubble-pop-in 0.32s cubic-bezier(0.175, 0.885, 0.32, 1.275) both;
+  text-align: center;
+}
+
+.naskia-giant-bubble::after {
+  content: '';
+  position: absolute;
+  bottom: -7px;
+  left: 50%;
+  transform: translateX(-50%) rotate(45deg);
+  width: 12px;
+  height: 12px;
+  background-color: var(--color-bg-surface);
+  border-right: 1.5px solid var(--color-elite);
+  border-bottom: 1.5px solid var(--color-elite);
+}
+
+.naskia-giant-bubble-user {
+  background-color: var(--color-elite);
+  color: #FFFFFF;
+  border-color: var(--color-elite);
+}
+
+.naskia-giant-bubble-user::after {
+  background-color: var(--color-elite);
+  border-color: var(--color-elite);
+}
+
+.naskia-giant-bubble-typing {
+  display: flex;
+  gap: 4px;
+  align-items: center;
+  justify-content: center;
+  padding: 12px 24px;
+}
+
+@keyframes bubble-pop-in {
+  from {
+    opacity: 0;
+    transform: translateX(-50%) translateY(10px) scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0) scale(1);
+  }
+}
+
+/* --- Typing Indicator Dots --- */
+.naskia-typing-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background-color: var(--color-text-tertiary);
+  animation: naskia-bounce-typing 1.4s infinite ease-in-out both;
+}
+
+.naskia-typing-dot:nth-child(1) { animation-delay: -0.32s; }
+.naskia-typing-dot:nth-child(2) { animation-delay: -0.16s; }
+
+@keyframes naskia-bounce-typing {
+  0%, 80%, 100% { transform: scale(0); }
+  40% { transform: scale(1.0); }
+}
+
+/* --- Large Microphone Overlay inside the Avatar wrapper --- */
+.naskia-large-mic-pulse-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(20, 16, 16, 0.82);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  z-index: 5;
+  backdrop-filter: blur(3px);
+  -webkit-backdrop-filter: blur(3px);
+  animation: fadeIn 0.25s ease-out;
+}
+
+.naskia-mic-waves {
+  position: relative;
+  width: 80px;
+  height: 80px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.naskia-mic-active-icon {
+  color: var(--color-elite);
+  z-index: 2;
+  position: relative;
+}
+
+.naskia-wave {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  background-color: rgba(210, 180, 120, 0.38);
+  animation: pulse-wave 2s infinite linear;
+}
+
+.naskia-wave.wave-1 { animation-delay: 0s; }
+.naskia-wave.wave-2 { animation-delay: 0.6s; }
+.naskia-wave.wave-3 { animation-delay: 1.2s; }
+
+@keyframes pulse-wave {
+  0% {
+    transform: scale(0.5);
+    opacity: 0.95;
+  }
+  100% {
+    transform: scale(2.4);
+    opacity: 0;
+  }
+}
+
+.naskia-mic-feedback-text {
+  color: #FFFFFF;
+  font-size: 0.72rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  text-align: center;
+  animation: gentle-pulse 1.8s infinite ease-in-out;
+  padding: 0 12px;
+}
+
+/* --- Modal Footer / Bottom Bar --- */
+.naskia-modal-footer {
+  padding: 14px 18px calc(14px + var(--safe-bottom)) 18px;
+  border-top: 1px solid var(--color-border);
+  background-color: var(--color-bg-surface);
+}
+
+/* Chat Form input mode */
+.naskia-chat-form {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.naskia-chat-input {
+  flex: 1;
+  background-color: var(--color-bg-muted);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-full);
+  padding: 8px 16px;
+  font-family: var(--font-sans);
+  color: var(--color-text-primary);
+  font-size: 0.8rem;
+  outline: none;
+  transition: border-color var(--motion-fast) var(--easing), box-shadow var(--motion-fast) var(--easing);
+}
+
+.naskia-chat-input:focus {
+  border-color: var(--color-elite);
+  box-shadow: 0 0 0 2px var(--color-focus-ring);
+}
+
+.naskia-chat-send-btn {
+  background-color: var(--color-elite);
+  color: #FFFFFF;
+  border: none;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: opacity var(--motion-fast) var(--easing), transform var(--motion-fast) var(--easing);
+  flex-shrink: 0;
+}
+
+.naskia-chat-send-btn:hover:not(:disabled) {
+  opacity: 0.9;
+  transform: scale(1.05);
+}
+
+.naskia-chat-send-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.naskia-footer-icon-switch {
+  background: none;
+  border: 1px solid var(--color-border);
+  color: var(--color-text-secondary);
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all var(--motion-fast) var(--easing);
+  flex-shrink: 0;
+}
+
+.naskia-footer-icon-switch:hover {
+  background-color: var(--color-bg-muted);
+  color: var(--color-elite);
+  border-color: var(--color-elite);
+}
+
+/* Default state buttons row */
+.naskia-default-controls-row {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  align-items: center;
+}
+
+.naskia-footer-instruction {
+  font-size: 0.75rem;
+  color: var(--color-text-secondary);
+  font-weight: 500;
+}
+
+.naskia-footer-buttons-group {
+  display: flex;
+  gap: 12px;
+  width: 100%;
+}
+
+.naskia-footer-btn {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 10px;
+  border-radius: var(--radius-md);
+  border: 1.5px solid var(--color-border);
+  background-color: var(--color-bg-muted);
+  color: var(--color-text-primary);
+  font-family: var(--font-sans);
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all var(--motion-fast) var(--easing);
+}
+
+.naskia-footer-btn:hover {
+  border-color: var(--color-elite);
+  background-color: var(--color-elite-bg);
+  color: var(--color-elite);
+  transform: translateY(-1px);
+}
+
+.naskia-footer-btn:active {
+  transform: translateY(0);
+}
+
+.naskia-footer-btn.active {
+  background-color: var(--color-elite);
+  color: #FFFFFF;
+  border-color: var(--color-elite);
+}

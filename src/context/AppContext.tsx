@@ -76,6 +76,7 @@ interface AppContextProps {
   completeOnboarding: () => void;
   simulateBgRemoval: (imageUrl: string) => Promise<string>;
   feedbackOutfit: (outfitId: string, rating: 'like' | 'dislike') => void;
+  updateUserName: (name: string) => void;
 }
 
 const AppContext = createContext<AppContextProps | undefined>(undefined);
@@ -88,7 +89,7 @@ const STORE_ITEMS: StoreItem[] = [
     brand: 'Estrafalaria (Lima)',
     price: 89.00,
     category: 'tops',
-    imageUrl: 'store_top_lino',
+    imageUrl: 'https://images.unsplash.com/photo-1602810318383-e386cc2a3ccf?auto=format&fit=crop&w=300&q=80',
     ecoFeature: 'Lino 100% Orgánico',
     link: 'https://estrafalaria.com.pe'
   },
@@ -98,7 +99,7 @@ const STORE_ITEMS: StoreItem[] = [
     brand: 'Sanna Eco (San Isidro)',
     price: 149.00,
     category: 'bottoms',
-    imageUrl: 'store_culotte',
+    imageUrl: 'https://images.unsplash.com/photo-1594633312681-425c7b97ccd1?auto=format&fit=crop&w=300&q=80',
     ecoFeature: 'Algodón recuperado',
     link: 'https://sannaecostore.pe'
   },
@@ -108,7 +109,7 @@ const STORE_ITEMS: StoreItem[] = [
     brand: 'Insecta Vegan Leather (Lima)',
     price: 210.00,
     category: 'outerwear',
-    imageUrl: 'store_casaca',
+    imageUrl: 'https://images.unsplash.com/photo-1548883354-7622d03aca27?auto=format&fit=crop&w=300&q=80',
     ecoFeature: 'Nylon de botellas PET',
     link: 'https://insecta.pe'
   },
@@ -118,7 +119,7 @@ const STORE_ITEMS: StoreItem[] = [
     brand: 'Höség (Miraflores)',
     price: 65.00,
     category: 'accessories',
-    imageUrl: 'store_tote',
+    imageUrl: 'https://images.unsplash.com/photo-1544816155-12df9643f363?auto=format&fit=crop&w=300&q=80',
     ecoFeature: '1 Compra = 1 Abrigo donado',
     link: 'https://hoseg.pe'
   }
@@ -232,7 +233,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         const res = await api.auth.getMe();
         // Set basic user profile
         setUser({
-          name: res.user.email.split('@')[0],
+          name: localStorage.getItem('sf_user_name') || res.user.email.split('@')[0],
           email: res.user.email,
           avatarUrl: `https://api.dicebear.com/7.x/adventurer/svg?seed=${res.user.id}`,
           plan: (localStorage.getItem('sf_plan') as PlanType) || 'free'
@@ -294,7 +295,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     try {
       const res = await api.auth.signin(email, password);
       const userProfile: UserProfile = {
-        name: res.user.email.split('@')[0],
+        name: localStorage.getItem('sf_user_name') || res.user.email.split('@')[0],
         email: res.user.email,
         avatarUrl: `https://api.dicebear.com/7.x/adventurer/svg?seed=${res.user.id}`,
         plan: (localStorage.getItem('sf_plan') as PlanType) || 'free'
@@ -313,7 +314,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     try {
       const res = await api.auth.signup(email, password);
       const userProfile: UserProfile = {
-        name: res.user.email.split('@')[0],
+        name: localStorage.getItem('sf_user_name') || res.user.email.split('@')[0],
         email: res.user.email,
         avatarUrl: `https://api.dicebear.com/7.x/adventurer/svg?seed=${res.user.id}`,
         plan: 'free'
@@ -336,6 +337,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     setOutfitsHistory([]);
     setIsOnboarded(false);
     localStorage.removeItem('sf_onboarded');
+    localStorage.removeItem('sf_user_name');
     setActiveTab('dashboard');
   };
 
@@ -552,6 +554,13 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     }
   };
 
+  const updateUserName = (name: string) => {
+    localStorage.setItem('sf_user_name', name);
+    if (user) {
+      setUser({ ...user, name });
+    }
+  };
+
   const completeOnboarding = () => {
     setIsOnboarded(true);
     localStorage.setItem('sf_onboarded', 'true');
@@ -612,7 +621,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       isOnboarded,
       completeOnboarding,
       simulateBgRemoval,
-      feedbackOutfit
+      feedbackOutfit,
+      updateUserName
     }}>
       {children}
     </AppContext.Provider>

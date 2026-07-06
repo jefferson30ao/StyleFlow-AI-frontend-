@@ -9,6 +9,7 @@ import { Store } from './pages/Store';
 import { Plans } from './pages/Plans';
 import { Auth } from './pages/Auth';
 import logoImg from './assets/logo.png';
+import { NaskIABubble } from './components/NaskIABubble';
 
 import { 
   Sparkles, 
@@ -58,12 +59,17 @@ function useTheme() {
 }
 
 const AppContent: React.FC = () => {
-  const { isOnboarded, activeTab, setActiveTab, isAuthenticated, isAuthenticating } = useApp();
+  const { isOnboarded, activeTab, setActiveTab, isAuthenticated, isAuthenticating, user } = useApp();
   const { theme, toggle: toggleTheme } = useTheme();
   const [showFullScreenAd, setShowFullScreenAd] = useState(false);
   const [currentBannerIndex, setCurrentBannerIndex] = useState(0);
 
   useEffect(() => {
+    if (user?.plan === 'elite') {
+      setShowFullScreenAd(false);
+      return;
+    }
+
     // Show interstitial ad after 3 minutes initially
     const initialTimer = setTimeout(() => {
       setShowFullScreenAd(true);
@@ -84,7 +90,7 @@ const AppContent: React.FC = () => {
       clearInterval(intervalTimer);
       clearInterval(bannerTimer);
     };
-  }, []);
+  }, [user?.plan]);
 
   if (isAuthenticating) {
     return (
@@ -98,7 +104,11 @@ const AppContent: React.FC = () => {
   }
 
   if (!isAuthenticated) {
-    return <Auth />;
+    return (
+      <div className="app-container">
+        <Auth />
+      </div>
+    );
   }
 
   if (!isOnboarded) {
@@ -182,14 +192,16 @@ const AppContent: React.FC = () => {
       </header>
 
       {/* Main Screen Content */}
-      <main className="app-main">
+      <main className="app-main" style={user?.plan === 'elite' ? { paddingBottom: 'calc(88px + var(--safe-bottom))' } : undefined}>
         {renderActivePage()}
       </main>
 
       {/* Simulated bottom ad banner */}
-      <div className="bottom-ad-banner">
-        <img src={BANNERS[currentBannerIndex]} alt={`Simulated Advertisement ${currentBannerIndex + 1}`} />
-      </div>
+      {user?.plan !== 'elite' && (
+        <div className="bottom-ad-banner">
+          <img src={BANNERS[currentBannerIndex]} alt={`Simulated Advertisement ${currentBannerIndex + 1}`} />
+        </div>
+      )}
 
       {/* Responsive Bottom Navigation */}
       <nav className="bottom-nav">
@@ -238,7 +250,7 @@ const AppContent: React.FC = () => {
       </nav>
 
       {/* Full screen interstitial ad */}
-      {showFullScreenAd && (
+      {showFullScreenAd && user?.plan !== 'elite' && (
         <div className="full-screen-ad-overlay">
           <div className="full-screen-ad-container">
             <button 
@@ -252,6 +264,9 @@ const AppContent: React.FC = () => {
           </div>
         </div>
       )}
+
+      {/* NaskIA floating bubble and modal dialog */}
+      <NaskIABubble />
     </div>
   );
 };

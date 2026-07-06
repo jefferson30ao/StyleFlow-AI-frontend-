@@ -44,7 +44,7 @@ export const Auth: React.FC = () => {
   };
 
   return (
-    <div className="flex-col w-full align-center justify-center" style={{ minHeight: '80vh', padding: '20px' }}>
+    <div className="flex-col w-full align-center justify-center" style={{ minHeight: '100vh', padding: '20px' }}>
       <div className="logo-glow mb-lg" style={{ width: '64px', height: '64px', borderRadius: 'var(--radius-md)' }}>
         <img src={logoImg} alt="StyleFlow AI" />
       </div>
